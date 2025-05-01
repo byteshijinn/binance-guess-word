@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>猜单词辅助工具</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- 引入Vue 3 -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+    <div id="app" class="container">
+        <!-- 引入Vue.js -->
+    <h1>猜单词辅助工具</h1>
+    
+    <div class="length-selector">
+        <label for="word-length">单词长度：</label>
+        <input type="number" id="word-length" v-model.number="wordLength" min="2" max="15">
+        <button @click="generateGuessRow">生成</button>
+    </div>
+    
+    <div class="word-cloud">
+        <div 
+            v-for="(word, index) in filteredWords" 
+            :key="index" 
+            class="word-tag"
+            @click="fillWord(word)"
+        >
+                {% raw %}{{ word }}{% endraw %}
+            </div>
+        </div>
+        
+        <div class="guess-container">
+            <div 
+                v-for="(row, rowIndex) in guessRows" 
+                :key="rowIndex" 
+                class="guess-row"
+            >
+                <!-- 修改字母框的HTML结构 -->
+                <div 
+                    v-for="(letter, letterIndex) in row.letters" 
+                    :key="letterIndex" 
+                    class="letter-box"
+                    :class="{ 
+                        'correct-border': letter.status === 'correct',
+                        'present-border': letter.status === 'present',
+                        'absent-border': !letter.status || letter.status === 'absent',
+                        'focused': letter.focused
+                    }"
+                >
+                    <input 
+                        type="text" 
+                        v-model="letter.value" 
+                        maxlength="1" 
+                        @input="handleInput($event, rowIndex, letterIndex)"
+                        @keydown="handleKeyNavigation($event, rowIndex, letterIndex)"
+                        @focus="setFocused(rowIndex, letterIndex, true)"
+                        @blur="setFocused(rowIndex, letterIndex, false)"
+                    >
+                    <div class="status-tooltip">
+                        <div class="status-buttons">
+                            <div class="status-btn correct" @click="setLetterStatus(rowIndex, letterIndex, 'correct')" @mousedown.prevent></div>
+                            <div class="status-btn present" @click="setLetterStatus(rowIndex, letterIndex, 'present')" @mousedown.prevent></div>
+                            <div class="status-btn absent" @click="setLetterStatus(rowIndex, letterIndex, 'absent')" @mousedown.prevent></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="clear-btn" @click="clearRow(rowIndex)">清空</button>
+            </div>
+            <div class="controls">
+                <button class="add-row-btn" @click="addGuessRow">添加新行</button>
+            </div>
+        </div>
+        <div class="results">
+            <h3>可能的单词 ({% raw %}{{ totalWords }}{% endraw %})</h3>
+            <!-- <div class="word-list">
+                <div 
+                    v-for="(word, index) in filteredWords" 
+                    :key="index" 
+                    class="word-item"
+                    @click="fillWord(word)"
+                >
+                    {% raw %}{{ word }}{% endraw %}
+                </div>
+            </div> -->
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

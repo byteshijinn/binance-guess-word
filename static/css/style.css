@@ -1,0 +1,301 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.length-selector {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+}
+
+input[type="number"] {
+    width: 60px;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+.word-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+    min-height: 50px;
+}
+
+.word-tag {
+    padding: 5px 10px;
+    background-color: #e0f7fa;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.word-tag:hover {
+    background-color: #b2ebf2;
+}
+
+.guess-container {
+    margin-bottom: 20px;
+}
+
+.guess-row {
+    display: flex;
+    margin-bottom: 30px;
+    gap: 5px;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 隐藏原有的状态选择器 */
+.status-selector {
+    display: none;
+}
+
+/* 新的状态选择器样式 */
+.status-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    padding: 10px;
+    margin-top: 10px;
+    z-index: 100;
+    display: none;
+    width: 180px;
+}
+
+/* 显示状态选择器 */
+.letter-box.focused .status-tooltip {
+    display: block;
+}
+
+/* 三角形指示箭头 */
+.status-tooltip:before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 0 10px 10px 10px;
+    border-style: solid;
+    border-color: transparent transparent white transparent;
+}
+
+/* 状态选择按钮 */
+.status-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.status-btn {
+    flex: 1;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+    font-weight: bold;
+}
+
+.status-btn.correct {
+    background-color: #2ecc71;
+}
+
+.status-btn.present {
+    background-color: #f1c40f;
+}
+
+.status-btn.absent {
+    background-color: #686868;
+}
+
+/* 移动端优化 */
+@media (max-width: 768px) {
+    .status-tooltip {
+        width: 220px;
+    }
+    
+    .status-btn {
+        height: 60px;
+        font-size: 18px;
+    }
+}
+
+.letter-box {
+    width: 40px;
+    height: 40px;
+    border: 2px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    text-transform: uppercase;
+    position: relative;
+    transition: border-color 0.3s;
+}
+
+.letter-box input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    text-align: center;
+    font-size: 20px;
+    text-transform: uppercase;
+}
+
+.letter-box input:focus {
+    outline: none;
+}
+
+/* 使用边框颜色代替圆点 */
+.correct-border {
+    border: 3px solid #2ecc71;
+}
+
+.present-border {
+    border: 3px solid #f1c40f;
+}
+
+.absent-border {
+    border: 3px solid #686868;
+}
+
+.results {
+    margin-top: 20px;
+}
+
+.word-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.word-item {
+    padding: 5px 10px;
+    background-color: #f0f0f0;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.word-item:hover {
+    background-color: #e0e0e0;
+}
+
+.add-row-btn {
+    margin-top: 10px;
+    background-color: #2ecc71;
+}
+
+.add-row-btn:hover {
+    background-color: #27ae60;
+}
+
+.clear-btn {
+    background-color: #686868;
+    margin-left: 10px;
+}
+
+.clear-btn:hover {
+    background-color: #c0392b;
+}
+
+
+/* 状态选择器样式 */
+.status-selector {
+    position: absolute;
+    bottom: -25px;
+    left: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.letter-box:hover .status-selector {
+    opacity: 1;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.status-dot.correct {
+    background-color: #2ecc71;
+}
+
+.status-dot.present {
+    background-color: #f1c40f;
+}
+
+.status-dot.absent {
+    background-color: #686868;
+}
+
+.status-dot.none {
+    background-color: #ddd;
+}
+
+/* 调整字母框的样式以适应状态选择器 */
+.guess-row {
+    margin-bottom: 30px;
+}
+
+.controls {
+    text-align: center;
+}
