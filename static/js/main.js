@@ -173,13 +173,13 @@ const app = createApp({
                             currentConfig.contains_letters.push(value);
                         }
                     } else {
-                        // 未标记或标记为不存在，都视为不存在
-                        if (!currentConfig.not_contains_letters.includes(value)) {
-                            currentConfig.not_contains_letters.push(value);
+                        // 如果已经标记存在，则不添加到不存在列表里
+                        let exists = currentConfig.contains_letters.filter(l => l == value)
+                        if (exists.length == 0) {
+                            if (!currentConfig.not_contains_letters.includes(value)) {
+                                currentConfig.not_contains_letters.push(value);
+                            }
                         }
-                        
-                        // 从 contains_letters 中移除
-                        currentConfig.contains_letters = currentConfig.contains_letters.filter(l => l !== value);
                     }
                 });
             });

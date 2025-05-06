@@ -24,7 +24,8 @@ for word in words_list:
     singular_form = lemmatizer.lemmatize(word, 'n')
     
     # 添加到处理后的单词集合
-    processed_words.add(singular_form)
+    if singular_form in dictionary:
+        processed_words.add(singular_form)
 
 # 按字母顺序排序
 unique_words = sorted(processed_words)
