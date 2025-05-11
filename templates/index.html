@@ -13,46 +13,70 @@
     <div id="app" class="container">
         <!-- 引入Vue.js -->
     <h1>猜单词辅助工具</h1>
-    
+
+    <!-- 添加文章更新按钮 -->
+    <div class="article-update">
+        <button @click="toggleArticleForm" class="update-btn">
+            {% raw %}{{ showArticleForm ? '隐藏文章表单' : '更新文章' }}{% endraw %}
+        </button>
+    </div>
+
+    <!-- 文章更新表单 -->
+    <div v-if="showArticleForm" class="article-form">
+        <h3>更新文章</h3>
+        <textarea
+            v-model="article"
+            placeholder="请输入文章内容..."
+            rows="10"
+            class="article-textarea"
+        ></textarea>
+        <div class="article-controls">
+            <button @click="updateArticle" class="submit-btn">提交更新</button>
+        </div>
+        <div v-if="articleUpdateStatus" class="status-message">
+            {% raw %}{{ articleUpdateStatus }}{% endraw %}
+        </div>
+    </div>
+
     <div class="length-selector">
         <label for="word-length">单词长度：</label>
         <input type="number" id="word-length" v-model.number="wordLength" min="2" max="15">
         <button @click="generateGuessRow">生成</button>
     </div>
-    
+
     <div class="word-cloud">
-        <div 
-            v-for="(word, index) in filteredWords" 
-            :key="index" 
+        <div
+            v-for="(word, index) in filteredWords"
+            :key="index"
             class="word-tag"
             @click="fillWord(word)"
         >
                 {% raw %}{{ word }}{% endraw %}
             </div>
         </div>
-        
+
         <div class="guess-container">
-            <div 
-                v-for="(row, rowIndex) in guessRows" 
-                :key="rowIndex" 
+            <div
+                v-for="(row, rowIndex) in guessRows"
+                :key="rowIndex"
                 class="guess-row"
             >
                 <!-- 修改字母框的HTML结构 -->
-                <div 
-                    v-for="(letter, letterIndex) in row.letters" 
-                    :key="letterIndex" 
+                <div
+                    v-for="(letter, letterIndex) in row.letters"
+                    :key="letterIndex"
                     class="letter-box"
-                    :class="{ 
+                    :class="{
                         'correct-border': letter.status === 'correct',
                         'present-border': letter.status === 'present',
                         'absent-border': !letter.status || letter.status === 'absent',
                         'focused': letter.focused
                     }"
                 >
-                    <input 
-                        type="text" 
-                        v-model="letter.value" 
-                        maxlength="1" 
+                    <input
+                        type="text"
+                        v-model="letter.value"
+                        maxlength="1"
                         @input="handleInput($event, rowIndex, letterIndex)"
                         @keydown="handleKeyNavigation($event, rowIndex, letterIndex)"
                         @focus="setFocused(rowIndex, letterIndex, true)"
@@ -75,9 +99,9 @@
         <div class="results">
             <h3>可能的单词 ({% raw %}{{ totalWords }}{% endraw %})</h3>
             <!-- <div class="word-list">
-                <div 
-                    v-for="(word, index) in filteredWords" 
-                    :key="index" 
+                <div
+                    v-for="(word, index) in filteredWords"
+                    :key="index"
                     class="word-item"
                     @click="fillWord(word)"
                 >

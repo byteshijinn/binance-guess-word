@@ -1,6 +1,48 @@
 const { createApp, ref, reactive, watch, onMounted, nextTick } = Vue;
 
 const app = createApp({
+    data() {
+        return {
+            article: '',
+            articleUpdateStatus: '',
+            showArticleForm: false
+        }
+    },
+    methods: {
+        // 切换显示文章表单
+        toggleArticleForm() {
+            this.showArticleForm = !this.showArticleForm;
+        },
+
+        // 提交文章更新
+        async updateArticle() {
+            if (!this.article.trim()) {
+                this.articleUpdateStatus = '请输入文章内容';
+                return;
+            }
+
+            try {
+                const response = await axios.post('/api/update_article', {
+                    article: this.article
+                });
+
+                if (response.data.success) {
+                    this.articleUpdateStatus = response.data.message;
+                    this.article = ''; // 清空文章输入框
+
+                    // 如果当前有设置单词长度，重新获取该长度的单词
+                    if (this.wordLength) {
+                        this.generateGuessRow();
+                    }
+                } else {
+                    this.articleUpdateStatus = '更新失败: ' + response.data.message;
+                }
+            } catch (error) {
+                console.error('更新文章出错:', error);
+                this.articleUpdateStatus = '更新出错，请查看控制台';
+            }
+        },
+    },
     setup() {
         // 响应式状态
         const wordLength = ref(5);
@@ -8,7 +50,7 @@ const app = createApp({
         const filteredWords = ref([]);
         const totalWords = ref(0);
         const currentStatus = ref('');
-        
+
         // 配置对象
         const currentConfig = reactive({
             length: 5,
@@ -17,18 +59,18 @@ const app = createApp({
             not_contains_letters: [],
             not_at_positions: {}
         });
-        
+
         // 生命周期钩子
         onMounted(() => {
             // 初始化
             generateGuessRow();
-            
+
             // 监听猜测行变化
             // watch(guessRows, (newVal) => {
             //     console.log('guessRows 更新:', JSON.stringify(newVal));
             // }, { deep: true });
         });
-        
+
         // 生成猜测行
         const generateGuessRow = () => {
             // 确保 wordLength 是有效的数字
@@ -36,28 +78,28 @@ const app = createApp({
                 alert('请输入2-15之间的单词长度');
                 return;
             }
-            
+
             // 重置配置
             currentConfig.length = wordLength.value;
             currentConfig.letters_at_positions = {};
             currentConfig.contains_letters = [];
             currentConfig.not_contains_letters = [];
             currentConfig.not_at_positions = {};
-            
+
             // 清空猜测行
             guessRows.value = [];
-            
+
             // 添加第一行猜测
             addGuessRow();
-            
+
             // 获取指定长度的单词
             fetchWords(wordLength.value);
         };
-        
+
         // 添加新的猜测行
         const addGuessRow = () => {
             const letters = [];
-            
+
             for (let i = 0; i < wordLength.value; i++) {
                 letters.push({
                     value: '',
@@ -65,11 +107,11 @@ const app = createApp({
                     focused: false
                 });
             }
-            
+
             guessRows.value.push({
                 letters: letters
             });
-            
+
             // 聚焦到新行的第一个输入框
             nextTick(() => {
                 const inputs = document.querySelectorAll('.guess-row:last-child input');
@@ -78,7 +120,7 @@ const app = createApp({
                 }
             });
         };
-        
+
         // 清空一行
         const clearRow = (rowIndex) => {
             const row = guessRows.value[rowIndex];
@@ -86,13 +128,13 @@ const app = createApp({
                 letter.value = '';
                 letter.status = '';
             });
-            
+
             // 确保在清空后重新计算配置并获取单词列表
             nextTick(() => {
                 updateConfig();
             });
         };
-        
+
         // 处理键盘导航
         const handleKeyNavigation = (event, rowIndex, letterIndex) => {
             if (event.key === 'ArrowRight' && letterIndex < wordLength.value - 1) {
@@ -113,12 +155,12 @@ const app = createApp({
                 });
             }
         };
-        
+
         // 处理输入事件
         const handleInput = (event, rowIndex, letterIndex) => {
             // 更新配置
             updateConfig();
-            
+
             // 如果输入了一个字符并且不是最后一个输入框，自动移动到下一个
             if (event.target.value.length === 1 && letterIndex < wordLength.value - 1) {
                 nextTick(() => {
@@ -129,7 +171,7 @@ const app = createApp({
                 });
             }
         };
-        
+
         // 更新配置
         const updateConfig = () => {
             // 重置部分配置
@@ -137,24 +179,24 @@ const app = createApp({
             currentConfig.contains_letters = [];
             currentConfig.not_contains_letters = [];
             currentConfig.not_at_positions = {};
-            
+
             // 遍历所有猜测行
             guessRows.value.forEach((row, rowIndex) => {
                 row.letters.forEach((letter, position) => {
                     const value = letter.value.toLowerCase();
-                    
+
                     if (!value) return;
-                    
+
                     // 根据状态更新配置
                     if (letter.status === 'correct') {
                         // 字母在正确位置
                         currentConfig.letters_at_positions[position] = value;
-                        
+
                         // 确保该字母不在 not_contains_letters 中
                         if (currentConfig.not_contains_letters.includes(value)) {
                             currentConfig.not_contains_letters = currentConfig.not_contains_letters.filter(l => l !== value);
                         }
-                        
+
                         // 添加到 contains_letters
                         if (!currentConfig.contains_letters.includes(value)) {
                             currentConfig.contains_letters.push(value);
@@ -167,12 +209,19 @@ const app = createApp({
                         if (!currentConfig.not_at_positions[value].includes(position)) {
                             currentConfig.not_at_positions[value].push(position);
                         }
-                        
+
                         // 添加到 contains_letters
                         if (!currentConfig.contains_letters.includes(value)) {
                             currentConfig.contains_letters.push(value);
                         }
                     } else {
+                        // // 未标记或标记为不存在，都视为不存在
+                        // if (!currentConfig.not_contains_letters.includes(value)) {
+                        //     currentConfig.not_contains_letters.push(value);
+                        // }
+
+                        // // 从 contains_letters 中移除
+                        // currentConfig.contains_letters = currentConfig.contains_letters.filter(l => l !== value);
                         // 如果已经标记存在，则不添加到不存在列表里
                         let exists = currentConfig.contains_letters.filter(l => l == value)
                         if (exists.length == 0) {
@@ -183,11 +232,11 @@ const app = createApp({
                     }
                 });
             });
-            
+
             // 发送请求获取过滤后的单词
             fetchFilteredWords();
         };
-        
+
         // 获取指定长度的单词
         const fetchWords = (length) => {
             axios.get(`/api/words?length=${length}`)
@@ -201,24 +250,24 @@ const app = createApp({
                     alert('获取单词失败，请重试');
                 });
         };
-        
+
         // 获取过滤后的单词
         const fetchFilteredWords = () => {
             // 确保 currentConfig 中的位置索引是数字类型
             const config = JSON.parse(JSON.stringify(currentConfig));
-            
+
             // 确保 letters_at_positions 中的键是数字
             const letters_at_positions = {};
             for (const [key, value] of Object.entries(config.letters_at_positions)) {
                 letters_at_positions[parseInt(key)] = value;
             }
             config.letters_at_positions = letters_at_positions;
-            
+
             // 确保 not_at_positions 中的位置是数字
             for (const letter in config.not_at_positions) {
                 config.not_at_positions[letter] = config.not_at_positions[letter].map(pos => parseInt(pos));
             }
-            
+
             axios.post('/api/filter', config)
                 .then(response => {
                     filteredWords.value = response.data.words;
@@ -230,22 +279,22 @@ const app = createApp({
                     alert('过滤单词失败，请重试');
                 });
         };
-        
+
         // 填充单词到最新的行
         const fillWord = (word) => {
             // 获取最后一行
             const lastRowIndex = guessRows.value.length - 1;
             const row = guessRows.value[lastRowIndex];
-            
+
             // 填充单词
             for (let i = 0; i < word.length && i < wordLength.value; i++) {
                 row.letters[i].value = word[i];
             }
-            
+
             // 更新配置
             updateConfig();
         };
-        
+
         // 设置输入框焦点状态
         const setFocused = (rowIndex, letterIndex, isFocused) => {
             console.log(`setFocused(${rowIndex}, ${letterIndex}, ${isFocused})`);
@@ -262,7 +311,7 @@ const app = createApp({
                     // 检查是否点击了状态按钮
                     const activeElement = document.activeElement;
                     const isStatusButton = activeElement && activeElement.classList.contains('status-btn');
-                    
+
                     if (!isStatusButton) {
                         const letter = guessRows.value[rowIndex].letters[letterIndex];
                         letter.focused = false;
@@ -270,18 +319,18 @@ const app = createApp({
                 }, 100);
             }
         };
-        
+
         // 设置字母状态
         const setLetterStatus = (rowIndex, letterIndex, status) => {
-            console.log(`setLetterStatus(${rowIndex}, ${letterIndex}, ${status})`);
-            
+            // console.log(`setLetterStatus(${rowIndex}, ${letterIndex}, ${status})`);
+
             // 直接修改状态，Vue 3 不需要 $set
             const letter = guessRows.value[rowIndex].letters[letterIndex];
             letter.status = status;
             letter.focused = false;
-            
+
             updateConfig();
-            
+
             // 聚焦回输入框，方便继续输入
             nextTick(() => {
                 const inputs = document.querySelectorAll(`.guess-row:nth-child(${rowIndex + 1}) input`);
@@ -290,7 +339,7 @@ const app = createApp({
                 }
             });
         };
-        
+
         // 返回模板需要的所有数据和方法
         return {
             wordLength,

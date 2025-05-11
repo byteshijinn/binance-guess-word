@@ -299,3 +299,49 @@ button:hover {
 .controls {
     text-align: center;
 }
+
+/* 文章更新表单样式 */
+.article-update {
+    text-align: right;
+    margin-bottom: 15px;
+}
+
+.update-btn {
+    background-color: #3498db;
+    color: white;
+}
+
+.article-form {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+}
+
+.article-textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    font-family: Arial, sans-serif;
+}
+
+.article-controls {
+    margin-bottom: 10px;
+}
+
+.submit-btn {
+    background-color: #2ecc71;
+}
+
+.submit-btn:hover {
+    background-color: #27ae60;
+}
+
+.status-message {
+    padding: 10px;
+    background-color: #e8f4f8;
+    border-radius: 4px;
+    margin-top: 10px;
+}
