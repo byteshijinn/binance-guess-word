@@ -134,11 +134,11 @@ def update_article():
             continue
 
         # 将复数形式转换为单数形式
-        singular_form = lemmatizer.lemmatize(word, 'n')
-
-        # 添加到处理后的单词集合
-        if singular_form in dictionary:
-            processed_words.add(singular_form)
+        lemma = lemmatizer.lemmatize(word, 'n')
+        # 不再判断normal_form in dictionary，具体比如online之类的会例外
+        processed_words.add(lemma)
+        lemma = lemmatizer.lemmatize(word, 'v')
+        processed_words.add(lemma)
 
     # 按字母顺序排序
     unique_words = sorted(processed_words)
