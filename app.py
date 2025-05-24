@@ -136,8 +136,9 @@ def update_article():
         # 将复数形式转换为单数形式
         lemma = lemmatizer.lemmatize(word, 'n')
         # 不再判断normal_form in dictionary，具体比如online之类的会例外
-        processed_words.add(lemma)
-        lemma = lemmatizer.lemmatize(word, 'v')
+        lemma = lemmatizer.lemmatize(lemma, 'v')
+        if re.match(r'[0-9]', lemma):
+            continue
         processed_words.add(lemma)
 
     # 按字母顺序排序
